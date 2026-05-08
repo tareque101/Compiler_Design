@@ -1,0 +1,10 @@
+mini_compiler/
+├── main.py              # Entry point: links all phases together
+├── lexer.py             # Phase 1: Tokenizer
+├── parser_ast.py        # Phase 2: Recursive Descent Parser & AST Nodes
+├── semantic_analyzer.py # Phase 3: Symbol Table & Type Checking
+├── icg.py               # Phase 4: Three-Address Code Generator
+├── optimizer.py         # Bonus: Constant Folding
+├── code_gen.py          # Bonus: Assembly-like Generator
+└── tests/
+    └── sample_code.txt  # Input file with custom language code
