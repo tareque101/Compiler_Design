@@ -5,7 +5,6 @@ class Parser:
         self.errors = []
 
     def peek(self):
-        # Safety check to prevent "list index out of range"
         if self.pos >= len(self.tokens):
             return ('EOF', None)
         return self.tokens[self.pos]
@@ -15,7 +14,6 @@ class Parser:
         if expected_type and token[0] != expected_type:
             self.errors.append(f"Syntax Error: Expected {expected_type} but got {token[0]}")
         
-        # Move forward only if we haven't hit EOF
         if token[0] != 'EOF':
             self.pos += 1
         return token
@@ -31,23 +29,19 @@ class Parser:
     def statement(self):
         t_type, val = self.peek()
         
-        # Bonus: Support for nested blocks { ... }
         if t_type == 'LBRACE':
             return self.block()
         
-        # Declaration: int x; OR int x = 10;
-        if t_type == 'KEYWORD' and val == 'int':
+        # --- FIXED HERE: Accept all primitive data types ---
+        if t_type == 'KEYWORD' and val in ('int', 'float', 'char', 'bool'):
             return self.declaration()
         
-        # Assignment: x = 20;
         if t_type == 'ID':
             return self.assignment()
         
-        # Print: print(x);
         if t_type == 'KEYWORD' and val == 'print':
             return self.print_stmt()
         
-        # Error recovery
         if t_type != 'EOF':
             self.errors.append(f"Syntax Error: Invalid statement start '{val}'")
             self.consume()
@@ -56,7 +50,6 @@ class Parser:
     def block(self):
         self.consume('LBRACE')
         statements = []
-        # Parse until we hit a closing brace or end of file
         while self.peek()[0] != 'RBRACE' and self.peek()[0] != 'EOF':
             stmt = self.statement()
             if stmt:
@@ -65,17 +58,15 @@ class Parser:
         return ('BLOCK', statements)
 
     def declaration(self):
-        self.consume('KEYWORD')  # Consume 'int'
-        name = self.consume('ID')[1]  # Consume the variable name
+        self.consume('KEYWORD')  # Dynamically consumes 'int', 'float', 'char', or 'bool'
+        name = self.consume('ID')[1]  
         
-        # Check if there's an immediate assignment (int x = 10;)
         if self.peek()[0] == 'ASSIGN':
             self.consume('ASSIGN')
             expr = self.expression()
             self.consume('SEMI')
-            return ('DECL_ASSIGN', name, expr)
+            return ('DECL_ASSIGN', name, expr) # Keeps the exact same tuple shape
         
-        # Just a plain declaration (int x;)
         self.consume('SEMI')
         return ('DECL', name)
 
@@ -87,10 +78,10 @@ class Parser:
         return ('ASSIGN', name, expr)
 
     def print_stmt(self):
-        self.consume('KEYWORD') # Consume 'print'
-        self.consume('LPAREN')  # Consume '('
+        self.consume('KEYWORD') 
+        self.consume('LPAREN')  
         expr = self.expression()
-        self.consume('RPAREN')  # Consume ')'
+        self.consume('RPAREN')  
         self.consume('SEMI')
         return ('PRINT', expr)
 
